@@ -1,0 +1,22 @@
+project --topLevelPackage de.viadee.roo.sep --projectName SocialEventPlanner_v0.5 --java 6
+persistence setup --provider HIBERNATE --database H2_IN_MEMORY
+entity --class ~.domain.Address
+field string street --notNull --sizeMax 30
+field string houseNumber --notNull --sizeMax 3 --sizeMin 1
+field string zipCode --notNull --sizeMax 5 --sizeMin 4
+field string place --notNull --sizeMax 25
+entity --class ~.domain.Location
+field string locationName --notNull --sizeMax 30
+field reference address --type ~.domain.Address --notNull
+entity --class ~.domain.Employee
+field string firstName --notNull --sizeMax 30
+field string lastName --notNull --sizeMax 30
+field string employeeShortCut --notNull --sizeMax 3 --sizeMin 3
+field string email --notNull --sizeMax 30
+entity --class ~.domain.SocialEvent
+field reference location --type ~.domain.Location --notNull
+field date date --type java.util.Date --notNull --permitReservedWords
+field string name --notNull --sizeMax 30
+field string description --sizeMax 140
+field reference creator --type ~.domain.Employee --notNull
+field set subscribers --type ~.domain.Employee

@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context" xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd         http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.0.xsd         http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+    <!--
+        This will automatically locate any and all property files you have
+        within your classpath, provided they fall under the META-INF/spring
+        directory. The located property files are parsed and their values can
+        then be used within application context files in the form of
+        ${propertyKey}.
+    -->
+    <context:property-placeholder location="classpath*:META-INF/spring/*.properties"/>
+    <!--
+        Turn on AspectJ @Configurable support. As a result, any time you
+        instantiate an object, Spring will attempt to perform dependency
+        injection on that object. This occurs for instantiation via the "new"
+        keyword, as well as via reflection. This is possible because AspectJ
+        is used to "weave" Roo-based applications at compile time. In effect
+        this feature allows dependency injection of any object at all in your
+        system, which is a very useful feature (without @Configurable you'd
+        only be able to dependency inject objects acquired from Spring or
+        subsequently presented to a specific Spring dependency injection
+        method). Roo applications use this useful feature in a number of
+        areas, such as @PersistenceContext injection into entities.
+    -->
+    <context:spring-configured/>
+    <!--
+        This declaration will cause Spring to locate every @Component,
+        @Repository and @Service in your application. In practical terms this
+        allows you to write a POJO and then simply annotate the new POJO as an
+        @Service and Spring will automatically detect, instantiate and
+        dependency inject your service at startup time. Importantly, you can
+        then also have your new service injected into any other class that
+        requires it simply by declaring a field for your service inside the
+        relying class and Spring will inject it. Note that two exclude filters
+        are declared. The first ensures that Spring doesn't spend time
+        introspecting Roo-specific ITD aspects. The second ensures Roo doesn't
+        instantiate your @Controller classes, as these should be instantiated
+        by a web tier application context. Refer to web.xml for more details
+        about the web tier application context setup services.
+        
+        Furthermore, this turns on @Autowired, @PostConstruct etc support. These 
+        annotations allow you to use common Spring and Java Enterprise Edition 
+        annotations in your classes without needing to do any special configuration. 
+        The most commonly used annotation is @Autowired, which instructs Spring to
+        dependency inject an object into your class.
+    -->
+    <context:component-scan base-package="de.viadee.roo.sep">
+        <context:exclude-filter expression=".*_Roo_.*" type="regex"/>
+        <context:exclude-filter expression="org.springframework.stereotype.Controller" type="annotation"/>
+    </context:component-scan>
+    <bean class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" id="dataSource">
+        <property name="driverClassName" value="${database.driverClassName}"/>
+        <property name="url" value="${database.url}"/>
+        <property name="username" value="${database.username}"/>
+        <property name="password" value="${database.password}"/>
+    </bean>
+    <bean class="org.springframework.orm.jpa.JpaTransactionManager" id="transactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory"/>
+    </bean>
+    <tx:annotation-driven mode="aspectj" transaction-manager="transactionManager"/>
+    <bean class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean" id="entityManagerFactory">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    
+    
+    
+    
+    
+    
+    <bean class="de.viadee.roo.sep.main.WindowManager" id="WindowManager">
+    	<property name="mainFrame" ref="MainFrame"></property>
+    	<property name="addressPanel" ref="AddressPanel"></property>
+    	<property name="detailsFrame" ref="DetailsFrame"></property>
+    	<property name="addressDetailPanel" ref="AddressDetailsPanel"></property>
+    </bean>
+    
+    <bean class="de.viadee.roo.sep.rooswingcomponents.RooFrame" id="MainFrame">
+    	<property name="visible" value="true"></property>
+    	<property name="JMenuBar" ref="MenuBar"></property>
+    </bean>
+    
+    <bean class="de.viadee.roo.sep.rooswingcomponents.RooFrame" id="DetailsFrame">
+    	<property name="visible" value="false"></property>
+    </bean>
+    
+    
+    
+    <bean class="de.viadee.roo.sep.rooswingcomponents.RooMenuBar" id="MenuBar" init-method="init">
+    	<property name="myComponents">
+  			<list>
+  				<ref bean="FileMenu"/>
+  			</list>
+  		</property>
+    </bean>
+    
+    <bean id="FileMenu" class="de.viadee.roo.sep.rooswingcomponents.RooMenu" init-method="init">
+  		<property name="text" value="File" />
+  		<property name="myComponents">
+  			<list>
+  				<ref bean="EmployeeItem"/>
+  				<ref bean="AddressItem"/>
+  				<ref bean="SocialEventItem"/>
+  				<ref bean="LocationItem"/>
+  				<ref bean="ExitItem"/>
+  			</list>
+  		</property>
+  	</bean>
+    
+    <bean class="de.viadee.roo.sep.rooswingcomponents.RooMenuItem" id="EmployeeItem">
+    	<constructor-arg ref="MenuListener"></constructor-arg>
+  		<property name="text" value="Emloyees" />
+  	</bean>
+  	<bean class="de.viadee.roo.sep.rooswingcomponents.RooMenuItem" id="AddressItem">
+    	<constructor-arg ref="MenuListener"></constructor-arg>
+  		<property name="text" value="Addresses" />
+  	</bean>
+  	<bean class="de.viadee.roo.sep.rooswingcomponents.RooMenuItem" id="SocialEventItem">
+    	<constructor-arg ref="MenuListener"></constructor-arg>
+  		<property name="text" value="SocialEvents" />
+  	</bean>
+  	<bean class="de.viadee.roo.sep.rooswingcomponents.RooMenuItem" id="LocationItem">
+    	<constructor-arg ref="MenuListener"></constructor-arg>
+  		<property name="text" value="Locations" />
+  	</bean>
+    <bean class="de.viadee.roo.sep.rooswingcomponents.RooMenuItem" id="ExitItem">
+    	<constructor-arg ref="MenuListener"></constructor-arg>
+  		<property name="text" value="Exit" />
+  	</bean>
+    
+    <bean class="de.viadee.roo.sep.listeners.MenuListener" id="MenuListener"></bean>
+    
+    <bean class="de.viadee.roo.sep.rooswingcomponents.RooPanel" id="AddressPanel" init-method="init">
+    	<property name="panelComponents">
+  			<list>
+  				<ref bean="ScrollPane"/>
+  				<ref bean="CreateNewAddressButton"/>
+  			</list>
+  		</property>
+    </bean>
+    
+    <bean class="de.viadee.roo.sep.rooswingcomponents.RooPanel" id="AddressDetailsPanel" init-method="init">
+    	<property name="panelComponents">
+  			<list>
+  				<ref bean="StreetLabel"/>
+  				<ref bean="StreetTextField"/>
+  				<ref bean="HouseNumberLabel"/>
+  				<ref bean="HouseNumberTextField"/>
+  				<ref bean="ZipCodeLabel"/>
+  				<ref bean="ZipCodeTextField"/>
+  				<ref bean="PlaceLabel"/>
+  				<ref bean="PlaceTextField"/>
+  				<ref bean="AddNewAddressButton"/>
+  			</list>
+  		</property>
+    </bean>
+    
+    <bean class="de.viadee.roo.sep.rooswingcomponents.RooScrollPane" id="ScrollPane">
+    	<constructor-arg name="myComponent" ref="AddressTable"></constructor-arg>
+    </bean>
+    
+    <bean class="de.viadee.roo.sep.rooswingcomponents.RooAddressTable" id="AddressTable">
+    </bean>
+    
+    <bean class="de.viadee.roo.sep.rooswingcomponents.RooTextField" id="StreetTextField">
+    	<constructor-arg name="entity" type="java.lang.Object" ref="DecoratedAddress"></constructor-arg>
+    	<constructor-arg name="propertyName" type="java.lang.String" value="street"></constructor-arg>
+    	<property name="columns" value="20"></property>
+    </bean>
+    <bean class="de.viadee.roo.sep.rooswingcomponents.RooTextField" id="HouseNumberTextField">
+    	<constructor-arg name="entity" type="java.lang.Object" ref="DecoratedAddress"></constructor-arg>
+    	<constructor-arg name="propertyName" type="java.lang.String" value="houseNumber"></constructor-arg>
+    	<property name="columns" value="20"></property>
+    </bean>
+    <bean class="de.viadee.roo.sep.rooswingcomponents.RooTextField" id="ZipCodeTextField">
+    	<constructor-arg name="entity" type="java.lang.Object" ref="DecoratedAddress"></constructor-arg>
+    	<constructor-arg name="propertyName" type="java.lang.String" value="zipCode"></constructor-arg>
+   		<property name="columns" value="20"></property>
+    </bean>
+    <bean class="de.viadee.roo.sep.rooswingcomponents.RooTextField" id="PlaceTextField">
+    	<constructor-arg name="entity" type="java.lang.Object" ref="DecoratedAddress"></constructor-arg>
+    	<constructor-arg name="propertyName" type="java.lang.String" value="place"></constructor-arg>
+    	<property name="columns" value="20"></property>
+    </bean>
+    
+    <bean class="javax.swing.JLabel" id="StreetLabel">
+    	<property name="text" value="Street"></property>
+    </bean>
+    <bean class="javax.swing.JLabel" id="HouseNumberLabel">
+    	<property name="text" value="House Number"></property>
+    </bean>
+    <bean class="javax.swing.JLabel" id="ZipCodeLabel">
+    	<property name="text" value="Zip Code"></property>
+    </bean>
+    <bean class="javax.swing.JLabel" id="PlaceLabel">
+    	<property name="text" value="Place"></property>
+    </bean>
+    
+    <bean class="de.viadee.roo.sep.rooswingcomponents.RooButton" id="AddNewAddressButton">
+    	<constructor-arg name="listener" ref="CreateAddressListener"></constructor-arg>
+    	<property name="text" value="Add Address"></property>
+    </bean>
+    
+    <bean class="de.viadee.roo.sep.rooswingcomponents.RooButton" id="CreateNewAddressButton">
+    	<constructor-arg name="listener" ref="ShowAddressDetailsViewListener"></constructor-arg>
+    	<property name="text" value="New Address"></property>
+    </bean>
+    
+    
+    
+    
+    
+    <bean class="de.viadee.roo.sep.listeners.ShowAddressDetailsViewListener" id="ShowAddressDetailsViewListener">
+    </bean>
+    
+    <bean class="de.viadee.roo.sep.events.ShowAddressDetailsViewEvent" id="ShowAddressDetailsViewEvent">
+    </bean>
+
+
+
+
+
+
+
+
+<bean class="de.viadee.roo.sep.events.DeleteEmployeeEvent" id="DeleteEmployeeEvent">
+        <constructor-arg name="employee" ref="Employee"/>
+    </bean>
+<bean class="de.viadee.roo.sep.events.UpdateEmployeeEvent" id="UpdateEmployeeEvent">
+        <constructor-arg name="employee" ref="Employee"/>
+    </bean>
+<bean class="de.viadee.roo.sep.events.CreateEmployeeEvent" id="CreateEmployeeEvent">
+        <constructor-arg name="employee" ref="Employee"/>
+    </bean>
+<bean class="de.viadee.roo.sep.events.ReadEmployeeEvent" id="ReadEmployeeEvent">
+        <constructor-arg name="employee" ref="Employee"/>
+    </bean>
+<bean class="de.viadee.roo.sep.listeners.DeleteEmployeeListener" id="DeleteEmployeeListener">
+        <constructor-arg name="employee" ref="Employee"/>
+    </bean>
+<bean class="de.viadee.roo.sep.listeners.UpdateEmployeeListener" id="UpdateEmployeeListener">
+        <constructor-arg name="employee" ref="Employee"/>
+    </bean>
+<bean class="de.viadee.roo.sep.listeners.CreateEmployeeListener" id="CreateEmployeeListener">
+        <constructor-arg name="employee" ref="Employee"/>
+    </bean>
+<bean class="de.viadee.roo.sep.listeners.ReadEmployeeListener" id="ReadEmployeeListener">
+        <constructor-arg name="employee" ref="Employee"/>
+    </bean>
+<bean class="de.viadee.roo.sep.domain.Employee" id="Employee"/>
+<bean class="de.viadee.roo.sep.controller.EmployeeController" id="EmployeeController"/>
+<bean class="de.viadee.roo.sep.events.DeleteAddressEvent" id="DeleteAddressEvent">
+        <constructor-arg name="address" ref="Address"/>
+    </bean>
+<bean class="de.viadee.roo.sep.events.UpdateAddressEvent" id="UpdateAddressEvent">
+        <constructor-arg name="address" ref="Address"/>
+    </bean>
+<bean class="de.viadee.roo.sep.events.CreateAddressEvent" id="CreateAddressEvent">
+        <constructor-arg name="address" ref="DecoratedAddress"/>
+        <constructor-arg name="addressTable" ref="AddressTable"/>
+    </bean>
+<bean class="de.viadee.roo.sep.events.ReadAddressEvent" id="ReadAddressEvent">
+        <constructor-arg name="address" ref="Address"/>
+    </bean>
+<bean class="de.viadee.roo.sep.listeners.DeleteAddressListener" id="DeleteAddressListener">
+        <constructor-arg name="address" ref="Address"/>
+    </bean>
+<bean class="de.viadee.roo.sep.listeners.UpdateAddressListener" id="UpdateAddressListener">
+        <constructor-arg name="address" ref="Address"/>
+    </bean>
+<bean class="de.viadee.roo.sep.listeners.CreateAddressListener" id="CreateAddressListener">
+        <constructor-arg name="address" ref="DecoratedAddress"/>
+        <constructor-arg name="addressTable" ref="AddressTable"/>
+    </bean>
+<bean class="de.viadee.roo.sep.listeners.ReadAddressListener" id="ReadAddressListener">
+        <constructor-arg name="address" ref="Address"/>
+    </bean>
+<bean class="de.viadee.roo.sep.domain.Address" id="Address"/>
+<bean class="de.viadee.roo.sep.domain.DecoratedAddress" id="DecoratedAddress" />
+<bean class="de.viadee.roo.sep.controller.AddressController" id="AddressController" init-method="init" />
+<bean class="de.viadee.roo.sep.events.DeleteLocationEvent" id="DeleteLocationEvent">
+        <constructor-arg name="location" ref="Location"/>
+    </bean>
+<bean class="de.viadee.roo.sep.events.UpdateLocationEvent" id="UpdateLocationEvent">
+        <constructor-arg name="location" ref="Location"/>
+    </bean>
+<bean class="de.viadee.roo.sep.events.CreateLocationEvent" id="CreateLocationEvent">
+        <constructor-arg name="location" ref="Location"/>
+    </bean>
+<bean class="de.viadee.roo.sep.events.ReadLocationEvent" id="ReadLocationEvent">
+        <constructor-arg name="location" ref="Location"/>
+    </bean>
+<bean class="de.viadee.roo.sep.listeners.DeleteLocationListener" id="DeleteLocationListener">
+        <constructor-arg name="location" ref="Location"/>
+    </bean>
+<bean class="de.viadee.roo.sep.listeners.UpdateLocationListener" id="UpdateLocationListener">
+        <constructor-arg name="location" ref="Location"/>
+    </bean>
+<bean class="de.viadee.roo.sep.listeners.CreateLocationListener" id="CreateLocationListener">
+        <constructor-arg name="location" ref="Location"/>
+    </bean>
+<bean class="de.viadee.roo.sep.listeners.ReadLocationListener" id="ReadLocationListener">
+        <constructor-arg name="location" ref="Location"/>
+    </bean>
+<bean class="de.viadee.roo.sep.domain.Location" id="Location"/>
+<bean class="de.viadee.roo.sep.controller.LocationController" id="LocationController"/>
+<bean class="de.viadee.roo.sep.events.DeleteSocialEventEvent" id="DeleteSocialEventEvent">
+        <constructor-arg name="socialEvent" ref="SocialEvent"/>
+    </bean>
+<bean class="de.viadee.roo.sep.events.UpdateSocialEventEvent" id="UpdateSocialEventEvent">
+        <constructor-arg name="socialEvent" ref="SocialEvent"/>
+    </bean>
+<bean class="de.viadee.roo.sep.events.CreateSocialEventEvent" id="CreateSocialEventEvent">
+        <constructor-arg name="socialEvent" ref="SocialEvent"/>
+    </bean>
+<bean class="de.viadee.roo.sep.events.ReadSocialEventEvent" id="ReadSocialEventEvent">
+        <constructor-arg name="socialEvent" ref="SocialEvent"/>
+    </bean>
+<bean class="de.viadee.roo.sep.listeners.DeleteSocialEventListener" id="DeleteSocialEventListener">
+        <constructor-arg name="socialEvent" ref="SocialEvent"/>
+    </bean>
+<bean class="de.viadee.roo.sep.listeners.UpdateSocialEventListener" id="UpdateSocialEventListener">
+        <constructor-arg name="socialEvent" ref="SocialEvent"/>
+    </bean>
+<bean class="de.viadee.roo.sep.listeners.CreateSocialEventListener" id="CreateSocialEventListener">
+        <constructor-arg name="socialEvent" ref="SocialEvent"/>
+    </bean>
+<bean class="de.viadee.roo.sep.listeners.ReadSocialEventListener" id="ReadSocialEventListener">
+        <constructor-arg name="socialEvent" ref="SocialEvent"/>
+    </bean>
+<bean class="de.viadee.roo.sep.domain.SocialEvent" id="SocialEvent"/>
+<bean class="de.viadee.roo.sep.controller.SocialEventController" id="SocialEventController"/>
+</beans>
